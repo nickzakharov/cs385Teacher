@@ -117,6 +117,7 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+int             check_mmaps(char*);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

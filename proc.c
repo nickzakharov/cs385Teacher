@@ -70,6 +70,9 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+  p->mmaptop = (char*)0x40000000;
+  p->mmapcount = 0;
+
   return p;
 }
 
