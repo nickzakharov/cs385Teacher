@@ -84,6 +84,17 @@ int check_mmaps(char* address) {
   return 0;
 }
 
+int sys_evict() {
+  int addr;
+  if(argint(0,&addr) < 0) {
+    return -1;
+  }
+  else {
+    cprintf("Planning to evict page at %d\n",addr);
+    return 0;
+  }
+}
+
 int sys_mmap() {
   int fd;
   int flags;
