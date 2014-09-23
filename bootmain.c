@@ -25,7 +25,8 @@ bootmain(void)
   elf = (struct elfhdr*)0x10000;  // scratch space
 
   // Read 1st page off disk
-  readseg((uchar*)elf, 4096, 0);
+//  readseg((uchar*)elf, 4096, 0);
+  readseg((uchar*)elf, 4096*4096+1, 0);
 
   // Is this an ELF executable?
   if(elf->magic != ELF_MAGIC)
@@ -85,8 +86,8 @@ readseg(uchar* pa, uint count, uint offset)
   // Round down to sector boundary.
   pa -= offset % SECTSIZE;
 
-  // Translate from bytes to sectors; kernel starts at sector 1.
-  offset = (offset / SECTSIZE) + 1;
+  // Translate from bytes to sectors; kernel starts at sector 4096*8+1.
+  offset = (offset / SECTSIZE) + 4096*8+1;
 
   // If this is too slow, we could read lots of sectors at a time.
   // We'd write more to memory than asked, but it doesn't matter --
