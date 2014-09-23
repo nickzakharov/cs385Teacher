@@ -90,7 +90,8 @@ int sys_evict() {
     return -1;
   }
   else {
-    cprintf("Planning to evict page at %d\n",addr);
+    cprintf("ought to have evicted a page here, but didn't!\n");
+//    evict((char*)addr);
     return 0;
   }
 }
@@ -103,6 +104,11 @@ int sys_mmap() {
   }
 
   char *returnptr = proc->mmaptop;
+
+  if(proc->mmapcount >= NOMMAP) {
+    cprintf("Error: Ran out of mmaps in struct proc.\n");
+    return -1;
+  }
 
   // populate the proc->mmaps table
   proc->mmaps[proc->mmapcount].fd=fd;

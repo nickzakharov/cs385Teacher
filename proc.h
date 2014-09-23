@@ -72,7 +72,7 @@ struct proc {
   struct {
     int fd;
     char *start;
-  } mmaps[64];
+  } mmaps[NOMMAP];
 };
 
 // Process memory is laid out contiguously, low addresses first:

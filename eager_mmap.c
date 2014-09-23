@@ -1,9 +1,9 @@
 #include"types.h"
 #include"user.h"
 int main(int argc, char** argv) {
-  printf(1,"About to make first mmap. Next, you should see the first sentence from README\n");
-  int fd = open("README",0);  
+  int fd = open("LARGE",0);  
   char* text = mmap(fd,0);
+  
   text[85]=0;
   if(text!=(void*)0x40000000)
     printf(1,"Returned pointer is %d, should be 1073741824 (0x40000000)\n",text);
@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
   if(text2!=(void*)0x40001000)
     printf(1,"Returned pointer is %d, should be 1073741824+4069 (0x40001000)\n",text2);
   printf(1,"%s\n",text2+71661);
-
+ 
   printf(1,"Checking that first mmap is still ok, you should see the first sentence from README\n");
   text[85]=0;
   if(text!=(void*)0x40000000)
