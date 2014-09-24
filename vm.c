@@ -272,18 +272,6 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   return newsz;
 }
 
-int evict(char* addr) {
-  uint a = PGROUNDDOWN(((int)addr));
-    pte_t *pte = walkpgdir(proc->pgdir, (char*)a, 0);
-    if(pte) {
-      cprintf("Nothing to evict!\n",addr);    
-      char *v = p2v(PTE_ADDR(*pte));
-      kfree(v);
-      *pte = 0;
-    }
-    return 0;
-}
-
 // Free a page table and all the physical memory pages
 // in the user part.
 void
