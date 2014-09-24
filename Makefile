@@ -171,6 +171,7 @@ UPROGS=\
 	_evict_mmap\
 	_evict_swap\
 	_pagein_swap\
+	_page_replacement\
 	_mkdir\
 	_rm\
 	_sh\

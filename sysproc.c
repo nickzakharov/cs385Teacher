@@ -89,9 +89,8 @@ int sys_evict() {
   if(argint(0,&addr) < 0) {
     return -1;
   }
-  else {
-    cprintf("ought to have evicted a page here, but didn't!\n");
-//    evict((char*)addr);
+  else {        
+    evict((char*)addr);
     return 0;
   }
 }

@@ -103,6 +103,7 @@ kalloc(void)
     release(&kmem.lock);
 
   if(!r) { 
+    cprintf("Evicting a page to make room for more kalloc()\n");
     evict(find_eviction_victim());
     return kalloc();
   }
