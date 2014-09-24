@@ -272,6 +272,16 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   return newsz;
 }
 
+char* find_eviction_victim() {
+  cprintf("Should be looking for an eviction victim, but just returned 0\n");
+  return (char*)0;
+}
+
+int evict(char* addr) {
+  cprintf("Should be evicting, but just returned 0.\n");
+  return 0;
+}
+
 // Free a page table and all the physical memory pages
 // in the user part.
 void
