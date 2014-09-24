@@ -9,8 +9,10 @@ int main(int argc, char** argv) {
   printf(1,"Read some text.\n");
   printf(1,"%s\n",text+71661);
 
-  printf(1,"Now evicting the page.\n");
+  printf(1,"Now evicting the page, and reading again.\n");
+
   evict(text+71680);  
+  printf(1,"%s\n",text+71661);
 
   exit();
 }
