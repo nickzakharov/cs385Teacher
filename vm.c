@@ -273,8 +273,20 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 }
 
 char* find_eviction_victim() {
-  cprintf("Should be looking for an eviction victim, but just returned 0\n");
-  return (char*)0;
+  // this naive method starts at the top of the heap, and 
+  // keeps looking at lower pages until a mapped page is found
+  char* va=(char*)PGROUNDDOWN(proc->sz);
+  pte_t *pte;
+  while(va>=0) {
+    pte = walkpgdir(proc->pgdir, (char*)va, 0);
+    if(*pte & PTE_P) return va;
+    else va-=4096;
+  } 
+  
+  if(va==0) {
+    cprintf("Nothing to evict!\n");
+  }
+  return 0;
 }
 
 int evict(char* addr) {
