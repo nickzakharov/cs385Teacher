@@ -101,7 +101,6 @@ int sys_mmap() {
   if(argint(0,&fd) < 0 || argint(1,&flags) < 0) {
     return -1;
   }
-
   char *returnptr = proc->mmaptop;
 
   if(proc->mmapcount >= NOMMAP) {
@@ -134,6 +133,7 @@ int sys_mmap() {
     proc->mmaptop+=PGROUNDUP(proc->ofile[fd]->ip->size);
   }
   return (int)returnptr;
+
 }
 
 int
