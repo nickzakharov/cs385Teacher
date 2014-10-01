@@ -1,7 +1,7 @@
 #include"types.h"
 #include"user.h"
 int main(int argc, char** argv) {
-  int i;
+  int i,j,k;
 
   char* chunks[10];
   for(i=0;i<10;i++) {
@@ -14,9 +14,13 @@ int main(int argc, char** argv) {
   }
 
   for(i=0;i<10;i++) {
-    if(chunks[i][i*100]!=i) {
-      printf(1,"Uh-oh, chunk %d doesn't contain all %d's\n",i,i);
-      exit();
+    for(j=1023;j>=0;j--) {
+      for(k=1023;k>=0;k-=256) {
+        if(chunks[i][0]!=i || chunks[i][j*1024+k]!=i) {
+          printf(1,"Uh-oh, chunk %d doesn't contain all %d's\n",i,i);
+          exit();
+        }
+      }
     }
   }
 
