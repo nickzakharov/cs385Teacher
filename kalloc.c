@@ -89,6 +89,11 @@ kfree(char *v)
 // Allocate one 4096-byte page of physical memory.
 // Returns a pointer that the kernel can use.
 // Returns 0 if the memory cannot be allocated.
+int _replacement_count;
+int replacementcount() {
+  return _replacement_count;
+}
+
 char*
 kalloc(void)
 {
@@ -103,7 +108,7 @@ kalloc(void)
     release(&kmem.lock);
 
   if(!r) { 
-    cprintf("Evicting a page to make room for more kalloc()\n");
+    _replacement_count++;
     evict(find_eviction_victim());
     return kalloc();
   }

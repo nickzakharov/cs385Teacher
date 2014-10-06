@@ -65,6 +65,7 @@ void            ioapicinit(void);
 char*           kalloc(void);
 void            kfree(char*);
 int             kfreepagecount();
+int             replacementcount();
 void            kinit1(void*, void*);
 void            kinit2(void*, void*);
 
