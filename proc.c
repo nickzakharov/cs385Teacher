@@ -175,6 +175,22 @@ fork(void)
   return pid;
 }
 
+int 
+clone(void (*function)(void), char* stack) {  
+  int pid = fork();
+  int i=0;
+  acquire(&ptable.lock);
+  while(ptable.proc[i].proc->pid != pid) i++;
+  
+  ptable.proc[i].tf->eip=(uint)function;
+  ptable.proc[i].tf->esp=(uint)stack;
+  freevm(ptable.proc[i].proc->pgdir);
+  ptable.proc[i].proc->pgdir = current->proc->pgdir;
+
+  release(&ptable.lock);
+  return 0;
+}
+
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait() to find out it exited.
@@ -214,7 +230,6 @@ exit(void)
     }
   }
 
-  cprintf("Should make all threads ZOMBIE\n");
   // Jump into the scheduler, never to return.
   current->state = ZOMBIE;
   sched();
