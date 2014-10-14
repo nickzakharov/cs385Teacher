@@ -105,9 +105,11 @@ memmove(void *vdst, void *vsrc, int n)
 }
 
 void* malloc(unsigned int);
+
 int thread_create(void (*function)(void)) {
-  char* new_stack = malloc(1024*1024);
-  return clone(function,new_stack);
+  void** new_stack = malloc(1024*1024);  
+  *new_stack = &thread_exit;
+  return clone(function,(char*)new_stack);
 }
 
 void thread_join(int thread_id) {

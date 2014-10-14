@@ -191,6 +191,13 @@ clone(void (*function)(void), char* stack) {
   return 0;
 }
 
+void
+thread_exit(void) {
+  acquire(&ptable.lock);
+  current->state = ZOMBIE;
+  sched();
+}
+
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait() to find out it exited.

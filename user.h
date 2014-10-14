@@ -23,6 +23,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int clone(void (*function)(void), char* stack);
+void thread_exit(void);
 
 // ulib.c
 int stat(char*, struct stat*);
