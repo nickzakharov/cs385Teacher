@@ -175,9 +175,10 @@ fork(void)
   return pid;
 }
 
-int 
+int
 clone(void (*function)(void), char* stack) {  
   int pid = fork();
+  cprintf("thread pid is %d\n",pid);
   int i=0;
   acquire(&ptable.lock);
   while(ptable.proc[i].proc->pid != pid) i++;
@@ -194,9 +195,20 @@ clone(void (*function)(void), char* stack) {
 void
 thread_exit(void) {
   acquire(&ptable.lock);
-  current->state = ZOMBIE;
-  sched();
+  
+  //kfree(current->kstack);
+  //current->kstack = 0;
+  current->state = UNUSED;
+  current->proc = 0;
+  current->tf = 0;
+  current->chan = 0;
+  
+  /* using a "scratch" context to allow me to use swtch, even though my kernel stack is already kfreed */
+//  struct context scratch;
+//  struct context *scratchp = &scratch;
+  swtch(&current->context, cpu->scheduler);
 }
+
 
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
