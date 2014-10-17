@@ -108,9 +108,11 @@ void* malloc(unsigned int);
 
 int thread_create(void (*function)(void)) {
   void** new_stack = malloc(1024*1024);  
-  *new_stack = &thread_exit;
-  return clone(function,(char*)new_stack);
+  *(new_stack+1024*1024/4-1) = &thread_exit;
+  return clone(function,((char*)new_stack)+1024*1024-4);
 }
+
+
 
 
 
