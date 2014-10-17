@@ -37,6 +37,15 @@ sys_thread_exit(void)
 }
 
 int
+sys_thread_join(void) {
+  int tid;
+
+  if(argint(0, &tid) < 0)
+    return -1;
+  return thread_join(tid);
+}
+
+int
 sys_exit(void)
 {
   exit();

@@ -10,6 +10,7 @@ void f(void) {
   // a little artificial wait to force the race condition to happen
   int i=1000000000;
   while(i--);
+  printf(1,"Thread is done waiting.\n");
 
 }
 

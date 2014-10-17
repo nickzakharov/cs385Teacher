@@ -185,30 +185,57 @@ clone(void (*function)(void), char* stack) {
   
   ptable.proc[i].tf->eip=(uint)function;
   ptable.proc[i].tf->esp=(uint)stack;
+
+  // this is a start, but really should free more stuff.
   freevm(ptable.proc[i].proc->pgdir);
-  ptable.proc[i].proc->pgdir = current->proc->pgdir;
+  ptable.proc[i].proc = current->proc;
 
   release(&ptable.lock);
-  return 0;
+  return i;
 }
 
 void
 thread_exit(void) {
-  acquire(&ptable.lock);
-  
-  //kfree(current->kstack);
-  //current->kstack = 0;
+  cprintf("in thread_exit\n");
+  wakeup(current);
+
+  // WARNING: memory leak here - the kernel stack is not being freed, and it
+  //          can't very well be freed by the thread that's using it
+  acquire(&ptable.lock);  
   current->state = UNUSED;
   current->proc = 0;
   current->tf = 0;
   current->chan = 0;
-  
-  /* using a "scratch" context to allow me to use swtch, even though my kernel stack is already kfreed */
-//  struct context scratch;
-//  struct context *scratchp = &scratch;
+
   swtch(&current->context, cpu->scheduler);
 }
 
+int
+thread_join(int tid) {
+  acquire(&ptable.lock);
+
+/*
+  if(ptable.proc[tid].state==UNUSED || (ptable.proc[tid].proc != current->proc)) {
+    cprintf("thread_join(): Huh, seems the thread %d already exited?\n",tid);
+    release(&ptable.lock);
+    return -1;
+    }*/
+
+//  do {
+  cprintf("thread_join\n");
+  if(ptable.proc[tid].proc == (current->proc)) {
+    cprintf("sleeping for thread\n");
+    sleep(&ptable.proc[tid],&ptable.lock);
+    cprintf("Got woken up\n");
+  }
+  else {
+    cprintf("not sleeping for tid %d tproc %x current %x\n",tid,ptable.proc[tid].proc,current->proc);
+  }
+//  } 
+  release(&ptable.lock);  
+
+  return 0;
+}
 
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
@@ -218,6 +245,29 @@ exit(void)
 {
   struct thread *p;
   int fd;
+  
+  if(current->proc != &current->temporarilyhere) {
+    thread_exit();
+    cprintf("Argh! thread_exit() should not have returned!\n");
+  }
+
+  // now make sure every other thread dies first
+  current->proc->killed = 1;
+
+  int hasthreads=1;
+  while(hasthreads) {
+    hasthreads=0;
+
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+      if(p!=current && p->proc == current->proc) {
+        hasthreads=1;
+      }
+    release(&ptable.lock);
+
+    yield();
+  }
+
 
   if(current == initproc)
     panic("init exiting");

@@ -104,6 +104,7 @@ int             pipewrite(struct pipe*, char*, int);
 // proc.c
 struct proc*    copyproc(struct proc*);
 void            thread_exit(void);
+int             thread_join(int);
 void            exit(void);
 int             fork(void);
 int             clone(void (*)(void), char*);
