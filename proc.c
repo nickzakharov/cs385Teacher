@@ -177,20 +177,18 @@ fork(void)
 
 int
 clone(void (*function)(void), char* stack) {  
-  int pid = fork();
-  cprintf("thread pid is %d\n",pid);
-  int i=0;
+  struct thread* newt = allocproc();
+
   acquire(&ptable.lock);
-  while(ptable.proc[i].proc->pid != pid) i++;
-  
-  ptable.proc[i].tf->eip=(uint)function;
-  ptable.proc[i].tf->esp=(uint)stack;
+  *newt->tf = *current->tf;
+  newt->proc = current->proc;
+  newt->tf->eip=(uint)function;
+  newt->tf->esp=(uint)stack;
+  newt->state = RUNNABLE;
+  release(&ptable.lock);  
 
-  // this is a start, but really should free more stuff.
-  freevm(ptable.proc[i].proc->pgdir);
-  ptable.proc[i].proc = current->proc;
-
-  release(&ptable.lock);
+  int i=0;
+  while(newt!=&ptable.proc[i]) i++;
   return i;
 }
 

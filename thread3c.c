@@ -14,7 +14,7 @@ void f(void) {
   }
   printf(1,"Done looping %d\n",mylimit);
 
-  exit();
+//  exit();
 }
 
 int main(int argc, char** argv) {
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
   for(thread=0;thread<50;thread++) {
     thread_join(threadids[thread]);
-    printf(1,"Joined %d, shared is now\n",thread,shared);
+    printf(1,"Joined %d, shared is now %d\n",thread,shared);
   }  
   
   printf(1,"Main is done!\n"); 
