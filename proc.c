@@ -80,10 +80,6 @@ found:
   return p;
 }
 
-void killsiblingthreads() {
-  cprintf("Didn't kill sibling threads\n");
-}
-
 //PAGEBREAK: 32
 // Set up first user process.
 void
@@ -196,50 +192,60 @@ clone(void (*function)(void), char* stack) {
 
 void
 thread_exit(void) {
-  cprintf("in thread_exit\n");
   wakeup(current);
 
   acquire(&ptable.lock);  
   current->state = ZOMBIE;
+  current->proc->threads--;
   current->tf = 0;
   current->chan = 0;
-
-/*  int has_live_thread = 0;
-  struct thread* p;
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    if(p->state != UNUSED && p->state != ZOMBIE && current->proc = p->proc) {
-      exit();
-    } 
-    }*/
 
   swtch(&current->context, cpu->scheduler);  
 }
 
 int
 thread_join(int tid) {
+
   acquire(&ptable.lock);
 
-/*
-  if(ptable.proc[tid].state==UNUSED || (ptable.proc[tid].proc != current->proc)) {
-    cprintf("thread_join(): Huh, seems the thread %d already exited?\n",tid);
-    release(&ptable.lock);
-    return -1;
-    }*/
-
-//  do {
-  cprintf("thread_join\n");
-  if(ptable.proc[tid].proc == (current->proc) && ptable.proc[tid].state != ZOMBIE) {
-    cprintf("sleeping for thread\n");
+  if(ptable.proc[tid].proc == (current->proc) && ptable.proc[tid].state != ZOMBIE) 
     sleep(&ptable.proc[tid],&ptable.lock);
-    cprintf("Got woken up\n");
-  }
-  else {
-    cprintf("not sleeping for tid %d tproc %x current %x\n",tid,ptable.proc[tid].proc,current->proc);
-  }
-//  } 
+
   release(&ptable.lock);  
 
   return 0;
+}
+
+void killsiblingthreads() {
+  struct thread *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    if(p->proc == &current->temporarilyhere && current!=p)
+      p->should_die = 1;
+
+  int hassiblings=1;
+  while(hassiblings) {
+    hassiblings=0;
+
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+      if(p!=current && p->proc == current->proc) {
+
+        // clean up after dead sibling
+        if(p->state == ZOMBIE) {
+          kfree(p->kstack);
+          p->state = UNUSED;
+          p->kstack = 0;
+          p->proc = 0;
+        }
+        // still have to wait
+        else {
+          hassiblings=1;
+        }
+      }
+    release(&ptable.lock);
+    
+    yield();
+  }
 }
 
 // Exit the current process.  Does not return.
@@ -251,28 +257,10 @@ exit(void)
   struct thread *p;
   int fd;
   
-  if(current->proc != &current->temporarilyhere) {
-    thread_exit();
-    cprintf("Argh! thread_exit() should not have returned!\n");
-  }
-
   // now make sure every other thread dies first
-  current->proc->killed = 1;
+  killsiblingthreads();
 
-  int hasthreads=1;
-  while(hasthreads) {
-    hasthreads=0;
-
-    acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-      if(p!=current && p->proc == current->proc && p->state != ZOMBIE) {
-        hasthreads=1;
-      }
-    release(&ptable.lock);
-
-    yield();
-  }
-
+  cprintf("exit() proceeding\n");
 
   if(current == initproc)
     panic("init exiting");
@@ -292,12 +280,9 @@ exit(void)
 
   acquire(&ptable.lock);
 
-  // Parent might be sleeping in wait().
-  wakeup1(current->proc->parent);
-
-  // Pass abandoned children to init.
+  // Pass abandoned children and siblings to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->proc->parent == current->proc){
+    if(p->proc->parent == current->proc) {
       p->proc->parent = initproc->proc;
       if(p->state == ZOMBIE)
         wakeup1(initproc->proc);
@@ -306,6 +291,10 @@ exit(void)
 
   // Jump into the scheduler, never to return.
   current->state = ZOMBIE;
+
+  // Parent might be sleeping in wait().
+  wakeup1(current->proc->parent);
+
   sched();
   panic("zombie exit");
 }
@@ -331,17 +320,15 @@ wait(void)
         pid = p->proc->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        p->proc->threads--;
         p->state = UNUSED;
 
-        // free the process struct only after the last thread exits
-        if(p->proc->threads==0) {
-          freevm(p->proc->pgdir);
-          p->proc->pid = 0;
-          p->proc->parent = 0;
-          p->proc->name[0] = 0;
-          p->proc->killed = 0;
-        }
+        freevm(p->proc->pgdir);
+        p->proc->pid = 0;
+        p->proc->parent = 0;
+        p->proc->name[0] = 0;
+        p->proc->killed = 0;
+        p->proc = 0;
+
         release(&ptable.lock);
         return pid;
       }

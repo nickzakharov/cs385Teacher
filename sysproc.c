@@ -30,7 +30,6 @@ sys_clone(void)
 int
 sys_thread_exit(void) 
 {
-  cprintf("thread_exit!\n");
   thread_exit();
   cprintf("Argh! Thread exit didn't take!\n");
   return 0;

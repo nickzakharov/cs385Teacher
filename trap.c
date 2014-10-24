@@ -99,6 +99,9 @@ trap(struct trapframe *tf)
   // until it gets to the regular system call return.)
   if(current && current->proc->killed && (tf->cs&3) == DPL_USER)
     exit();
+  if(current && current->should_die && (tf->cs&3) == DPL_USER)
+    thread_exit();
+
 
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
@@ -108,4 +111,6 @@ trap(struct trapframe *tf)
   // Check if the process has been killed since we yielded
   if(current && current->proc->killed && (tf->cs&3) == DPL_USER)
     exit();
+  if(current && current->should_die && (tf->cs&3) == DPL_USER)
+    thread_exit();
 }
