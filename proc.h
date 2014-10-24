@@ -51,6 +51,7 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
+// Per-process state
 struct proc {
   uint sz;                     // Size of process memory (bytes)
   int pid;                     // Process ID
@@ -59,10 +60,11 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)  
   int killed;                  // If non-zero, have been killed
-  struct proc *parent;    // Parent process
+  int threads;
+  struct proc *parent;    // Parent process  
 };
 
-// Per-process state
+// Per-thread state
 struct thread {
   struct proc* proc;
   struct proc  temporarilyhere;
@@ -71,6 +73,7 @@ struct thread {
   struct trapframe *tf;        // Trap frame for current syscall
   struct context *context;     // swtch() here to run process
   void *chan;                  // If non-zero, sleeping on chan
+  int should_die;
 };
 
 // Process memory is laid out contiguously, low addresses first:

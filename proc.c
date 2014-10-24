@@ -50,7 +50,9 @@ found:
   // this needs to change to support more than one thread per proc
   p->proc = &p->temporarilyhere;
 
+  p->should_die = 0;
   p->state = EMBRYO;
+  p->proc->threads = 1;
   p->proc->pid = nextpid++;
   release(&ptable.lock);
 
@@ -182,14 +184,14 @@ clone(void (*function)(void), char* stack) {
   acquire(&ptable.lock);
   *newt->tf = *current->tf;
   newt->proc = current->proc;
+  newt->proc->threads++;
   newt->tf->eip=(uint)function;
   newt->tf->esp=(uint)stack;
   newt->state = RUNNABLE;
   release(&ptable.lock);  
 
-  int i=0;
-  while(newt!=&ptable.proc[i]) i++;
-  return i;
+  // return the index into the thread table
+  return (((uint)newt)-((uint)ptable.proc))/sizeof(struct thread);
 }
 
 void
@@ -197,15 +199,20 @@ thread_exit(void) {
   cprintf("in thread_exit\n");
   wakeup(current);
 
-  // WARNING: memory leak here - the kernel stack is not being freed, and it
-  //          can't very well be freed by the thread that's using it
   acquire(&ptable.lock);  
-  current->state = UNUSED;
-  current->proc = 0;
+  current->state = ZOMBIE;
   current->tf = 0;
   current->chan = 0;
 
-  swtch(&current->context, cpu->scheduler);
+/*  int has_live_thread = 0;
+  struct thread* p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    if(p->state != UNUSED && p->state != ZOMBIE && current->proc = p->proc) {
+      exit();
+    } 
+    }*/
+
+  swtch(&current->context, cpu->scheduler);  
 }
 
 int
@@ -221,7 +228,7 @@ thread_join(int tid) {
 
 //  do {
   cprintf("thread_join\n");
-  if(ptable.proc[tid].proc == (current->proc)) {
+  if(ptable.proc[tid].proc == (current->proc) && ptable.proc[tid].state != ZOMBIE) {
     cprintf("sleeping for thread\n");
     sleep(&ptable.proc[tid],&ptable.lock);
     cprintf("Got woken up\n");
@@ -258,7 +265,7 @@ exit(void)
 
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-      if(p!=current && p->proc == current->proc) {
+      if(p!=current && p->proc == current->proc && p->state != ZOMBIE) {
         hasthreads=1;
       }
     release(&ptable.lock);
@@ -324,12 +331,17 @@ wait(void)
         pid = p->proc->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        freevm(p->proc->pgdir);
+        p->proc->threads--;
         p->state = UNUSED;
-        p->proc->pid = 0;
-        p->proc->parent = 0;
-        p->proc->name[0] = 0;
-        p->proc->killed = 0;
+
+        // free the process struct only after the last thread exits
+        if(p->proc->threads==0) {
+          freevm(p->proc->pgdir);
+          p->proc->pid = 0;
+          p->proc->parent = 0;
+          p->proc->name[0] = 0;
+          p->proc->killed = 0;
+        }
         release(&ptable.lock);
         return pid;
       }
