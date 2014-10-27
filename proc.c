@@ -176,8 +176,15 @@ fork(void)
 int
 clone(void (*function)(void), char* stack) {  
   struct thread* newt = allocproc();
-
   acquire(&ptable.lock);
+
+  // this is necessary because we could be in the middle of system call processing
+  // when exit() is called.
+  if(current->should_die) {
+    release(&ptable.lock);
+    thread_exit();
+  }
+
   *newt->tf = *current->tf;
   newt->proc = current->proc;
   newt->proc->threads++;
@@ -217,11 +224,24 @@ thread_join(int tid) {
 }
 
 void killsiblingthreads() {
+
+  acquire(&ptable.lock);
+
+  // don't want more than one thread doing this, so if we were already killed, 
+  // exit without killing others
+  if(current->should_die) {
+    release(&ptable.lock);
+    thread_exit();
+  }
+
   struct thread *p;
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    if(p->proc == &current->temporarilyhere && current!=p)
-      p->should_die = 1;
+    if(p->proc == current->proc && current!=p) 
+      p->should_die = 1;     
 
+  release(&ptable.lock);
+
+  cprintf("waiting for siblings to die\n");
   int hassiblings=1;
   while(hassiblings) {
     hassiblings=0;
@@ -229,9 +249,10 @@ void killsiblingthreads() {
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
       if(p!=current && p->proc == current->proc) {
-
+        
         // clean up after dead sibling
         if(p->state == ZOMBIE) {
+
           kfree(p->kstack);
           p->state = UNUSED;
           p->kstack = 0;
@@ -256,11 +277,9 @@ exit(void)
 {
   struct thread *p;
   int fd;
-  
+
   // now make sure every other thread dies first
   killsiblingthreads();
-
-  cprintf("exit() proceeding\n");
 
   if(current == initproc)
     panic("init exiting");
@@ -295,6 +314,7 @@ exit(void)
   // Parent might be sleeping in wait().
   wakeup1(current->proc->parent);
 
+  cprintf("exit complete\n");
   sched();
   panic("zombie exit");
 }

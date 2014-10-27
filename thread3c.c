@@ -14,7 +14,7 @@ void f(void) {
   }
   printf(1,"Done looping %d\n",mylimit);
 
-//  exit();
+  exit();
 }
 
 int main(int argc, char** argv) {
