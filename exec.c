@@ -18,6 +18,8 @@ exec(char *path, char **argv)
   struct proghdr ph;
   pde_t *pgdir, *oldpgdir;
 
+  killsiblingthreads();
+
   begin_op();
   if((ip = namei(path)) == 0){
     end_op();
@@ -93,7 +95,6 @@ exec(char *path, char **argv)
   
   current->tf->eip = elf.entry;  // main
   current->tf->esp = sp;
-  killsiblingthreads();
 
   switchuvm(current->proc);
   freevm(oldpgdir);
