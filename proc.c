@@ -47,12 +47,10 @@ allocproc(void)
   return 0;
 
 found:
-  // this needs to change to support more than one thread per proc
   p->proc = &p->temporarilyhere;
 
   p->should_die = 0;
   p->state = EMBRYO;
-  p->proc->threads = 1;
   p->proc->pid = nextpid++;
   release(&ptable.lock);
 
@@ -187,7 +185,6 @@ clone(void (*function)(void), char* stack) {
 
   *newt->tf = *current->tf;
   newt->proc = current->proc;
-  newt->proc->threads++;
   newt->tf->eip=(uint)function;
   newt->tf->esp=(uint)stack;
   newt->state = RUNNABLE;
@@ -203,7 +200,6 @@ thread_exit(void) {
 
   acquire(&ptable.lock);  
   current->state = ZOMBIE;
-  current->proc->threads--;
   current->tf = 0;
   current->chan = 0;
 
@@ -298,9 +294,9 @@ exit(void)
 
   acquire(&ptable.lock);
 
-  // Pass abandoned children and siblings to init.
+  // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->proc->parent == current->proc) {
+    if(p->proc->parent == current->proc){
       p->proc->parent = initproc->proc;
       if(p->state == ZOMBIE)
         wakeup1(initproc->proc);
@@ -339,9 +335,9 @@ wait(void)
         pid = p->proc->pid;
         kfree(p->kstack);
         p->kstack = 0;
+        freevm(p->proc->pgdir);
         p->state = UNUSED;
 
-        freevm(p->proc->pgdir);
         p->proc->pid = 0;
         p->proc->parent = 0;
         p->proc->name[0] = 0;
