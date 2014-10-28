@@ -60,8 +60,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)  
   int killed;                  // If non-zero, have been killed
-  int threads;
-  struct proc *parent;    // Parent process  
+  struct proc *parent;    // Parent process
 };
 
 // Per-thread state
