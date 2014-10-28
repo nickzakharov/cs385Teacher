@@ -241,7 +241,6 @@ void killsiblingthreads() {
 
   release(&ptable.lock);
 
-  cprintf("waiting for siblings to die\n");
   int hassiblings=1;
   while(hassiblings) {
     hassiblings=0;

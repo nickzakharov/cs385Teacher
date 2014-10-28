@@ -2,7 +2,7 @@
 #include"user.h"
 
 
-volatile int shared = 0;
+int shared = 0;
 volatile int start = 0;
 volatile int done = 0;
 
@@ -11,11 +11,8 @@ void f(void) {
   int i;
   while(!start);
 
-  for(i=0;i<100000;i++) {
-    int temp = shared;
-    int j;
-    for(j=0;j<100;j++);
-    shared=temp+1;
+  for(i=0;i<1000000000;i++) {
+    shared++;
   }
 
   done = 1;
@@ -28,15 +25,12 @@ int main(int argc, char** argv) {
   start = 1;
 
   int i;
-  for(i=0;i<100000;i++) {
-    int temp = shared;
-    int j;
-    for(j=0;j<100;j++);
-    shared=temp+1;
+  for(i=0;i<1000000000;i++) {
+    shared++;
   }
  
   while(!done);
-  printf(1,"Shared is %d\n",shared);
+  printf(1,"race1b shared is %d\n",shared);
 
   exit();
   return 0;
