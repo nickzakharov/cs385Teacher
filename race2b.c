@@ -12,8 +12,10 @@ lock_t lock;
 void f(void) {
   int i;
   while(!start);
+  ready=1;
+  asm volatile("" : : : "memory");
 
-  for(i=0;i<1000000000;i++) {
+  for(i=0;i<1000000;i++) {
     lock_acquire(&lock);
     shared++;
     lock_release(&lock);
@@ -25,19 +27,27 @@ void f(void) {
 
 int main(int argc, char** argv) {
   thread_create(f);
-  lock_init(&lock);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  
+  int i;
+  for(i=0;i<100000000;i++);
 
   start = 1;
+  asm volatile("" : : : "memory");
 
-  int i;
-  for(i=0;i<1000000000;i++) {
-    lock_acquire(&lock);
-    shared++;
-    lock_release(&lock);
-  }
- 
   while(!done);
-  printf(1,"race2 shared is %d\n",shared);
+
+  for(i=0;i<100000000;i++);
+
+  printf(1,"race1b shared is %d\n",shared);
 
   exit();
   return 0;

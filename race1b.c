@@ -13,7 +13,7 @@ void f(void) {
   ready=1;
   asm volatile("" : : : "memory");
 
-  for(i=0;i<1000000000;i++) {
+  for(i=0;i<1000000;i++) {
     shared++;
   }
 
@@ -23,18 +23,24 @@ void f(void) {
 
 int main(int argc, char** argv) {
   thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
+  thread_create(f);
   
+  int i;
+  for(i=0;i<100000000;i++);
+
   start = 1;
   asm volatile("" : : : "memory");
-  while(!ready);
 
-  int i;
-  for(i=0;i<1000000000;i++) {
-    shared++;
-  }
- 
   while(!done);
-  printf(1,"race1 shared is %d\n",shared);
+  printf(1,"race1b shared is %d\n",shared);
 
   exit();
   return 0;
