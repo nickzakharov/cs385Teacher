@@ -1,13 +1,12 @@
 #include"types.h"
 #include"user.h"
-#include"lock.h"
+#include"multilock.h"
 
 volatile int shared = 0;
 volatile int start = 0;
 volatile int done = 0;
 
 lock_t lock;
-
 
 void f(void) {
   int i;
