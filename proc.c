@@ -199,7 +199,7 @@ thread_exit(void) {
   wakeup(current);
 
   acquire(&ptable.lock);  
-  current->state = ZOMBIE;
+  current->state = ZOMBIETHREAD;
   current->tf = 0;
   current->chan = 0;
 
@@ -211,8 +211,13 @@ thread_join(int tid) {
 
   acquire(&ptable.lock);
 
-  if(ptable.proc[tid].proc == (current->proc) && ptable.proc[tid].state != ZOMBIE) 
+  if(ptable.proc[tid].proc == (current->proc) && ptable.proc[tid].state != ZOMBIETHREAD) 
     sleep(&ptable.proc[tid],&ptable.lock);
+
+  kfree(ptable.proc[tid].kstack);
+  ptable.proc[tid].kstack = 0;
+  ptable.proc[tid].state = UNUSED;
+  ptable.proc[tid].proc = 0;
 
   release(&ptable.lock);  
 
@@ -246,12 +251,14 @@ void killsiblingthreads() {
       if(p!=current && p->proc == current->proc) {
         
         // clean up after dead sibling
-        if(p->state == ZOMBIE) {
+        if(p->state == ZOMBIETHREAD) {
 
-          kfree(p->kstack);
-          p->state = UNUSED;
-          p->kstack = 0;
-          p->proc = 0;
+          if(p->kstack) {
+            kfree(p->kstack);
+            p->state = UNUSED;
+            p->kstack = 0;
+            p->proc = 0;
+          }
         }
         // still have to wait
         else {
