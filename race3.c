@@ -13,12 +13,12 @@ void f(void) {
   int i;
   while(!start);
 
-  for(i=0;i<10000;i++) {
+  for(i=0;i<1000;i++) {
     lock_acquire(&lock);
 
     int j;
     int temp = shared;
-    for(j=0;j<100000;j++);
+    for(j=0;j<10000;j++);
 
     shared = temp + 1;
     lock_release(&lock);
@@ -38,12 +38,12 @@ int main(int argc, char** argv) {
 
   start = 1;
 
-  for(i=0;i<10000;i++) {
+  for(i=0;i<1000;i++) {
     lock_acquire(&lock);
 
     int j;
     int temp = shared;
-    for(j=0;j<100000;j++);
+    for(j=0;j<10000;j++);
     shared = temp + 1;
     lock_release(&lock);
   }

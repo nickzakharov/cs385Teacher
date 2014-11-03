@@ -35,15 +35,18 @@ void f(void) {
     else
       for(j=0;j<1000000;j++);
 
-    shared = temp + 1;
-    if(id<5) 
+
+    if(id<5) {
+      shared = temp + 1;      
       lock_release(&lock);
+    }
     else
       lock_release(&lock2);
   }
 
-  done = 1;
-
+  lock_acquire(&lock);
+  done++;
+  lock_release(&lock);
 }
 
 int main(int argc, char** argv) {
@@ -67,9 +70,7 @@ int main(int argc, char** argv) {
   start = 1;
   asm volatile("" : : : "memory");
 
-  while(!done);
-
-  for(i=0;i<100000000;i++);
+  while(done!=10);
 
   printf(1,"race4 shared is %d\n",shared);
 

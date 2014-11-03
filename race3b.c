@@ -26,8 +26,9 @@ void f(void) {
     lock_release(&lock);
   }
 
-  done = 1;
-
+  lock_acquire(&lock);
+  done++;
+  lock_release(&lock);
 }
 
 int main(int argc, char** argv) {
@@ -50,9 +51,7 @@ int main(int argc, char** argv) {
   start = 1;
   asm volatile("" : : : "memory");
 
-  while(!done);
-
-  for(i=0;i<100000000;i++);
+  while(done!=10);
 
   printf(1,"race3b shared is %d\n",shared);
 
