@@ -172,6 +172,7 @@ UPROGS=\
 	_race2b\
 	_race3\
 	_race3b\
+	_race4\
 	_rm\
 	_sh\
 	_stressfs\
