@@ -24,8 +24,8 @@ void f(void) {
 }
 
 int main(int argc, char** argv) {
-  thread_create(f);
   lock_init(&lock);
+  thread_create(f);
 
   start = 1;
 

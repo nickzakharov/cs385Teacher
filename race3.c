@@ -13,13 +13,14 @@ void f(void) {
   int i;
   while(!start);
 
-  for(i=0;i<100000;i++) {
+  for(i=0;i<10000;i++) {
     lock_acquire(&lock);
 
     int j;
-    for(j=0;j<10000;j++);
+    int temp = shared;
+    for(j=0;j<100000;j++);
 
-    shared++;
+    shared = temp + 1;
     lock_release(&lock);
   }
 
@@ -28,18 +29,22 @@ void f(void) {
 }
 
 int main(int argc, char** argv) {
-  thread_create(f);
   lock_init(&lock);
+
+  thread_create(f);
+
+  int i;
+  for(i=0;i<100000000;i++);
 
   start = 1;
 
-  int i;
-  for(i=0;i<100000;i++) {
+  for(i=0;i<10000;i++) {
     lock_acquire(&lock);
 
     int j;
-    for(j=0;j<10000;j++);
-    shared++;
+    int temp = shared;
+    for(j=0;j<100000;j++);
+    shared = temp + 1;
     lock_release(&lock);
   }
  

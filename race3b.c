@@ -19,9 +19,10 @@ void f(void) {
     lock_acquire(&lock);
 
     int j;
+    int temp = shared;
     for(j=0;j<10000;j++);
 
-    shared++;
+    shared=temp+1;
     lock_release(&lock);
   }
 
@@ -30,6 +31,8 @@ void f(void) {
 }
 
 int main(int argc, char** argv) {
+  lock_init(&lock);
+
   thread_create(f);
   thread_create(f);
   thread_create(f);

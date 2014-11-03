@@ -26,6 +26,8 @@ void f(void) {
 }
 
 int main(int argc, char** argv) {
+  lock_init(&lock);
+
   thread_create(f);
   thread_create(f);
   thread_create(f);
@@ -47,7 +49,7 @@ int main(int argc, char** argv) {
 
   for(i=0;i<100000000;i++);
 
-  printf(1,"race1b shared is %d\n",shared);
+  printf(1,"race2b shared is %d\n",shared);
 
   exit();
   return 0;

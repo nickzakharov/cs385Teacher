@@ -29,9 +29,13 @@ void f(void) {
       lock_acquire(&lock2);
 
     int j;
-    for(j=0;j<(id%5)*2000;j++);
+    int temp = shared;
+    if(id%5) 
+      for(j=0;j<1000;j++);
+    else
+      for(j=0;j<1000000;j++);
 
-    shared++;
+    shared = temp + 1;
     if(id<5) 
       lock_release(&lock);
     else
@@ -67,7 +71,7 @@ int main(int argc, char** argv) {
 
   for(i=0;i<100000000;i++);
 
-  printf(1,"race3b shared is %d\n",shared);
+  printf(1,"race4 shared is %d\n",shared);
 
   exit();
   return 0;
