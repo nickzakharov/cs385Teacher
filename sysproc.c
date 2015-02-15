@@ -63,10 +63,9 @@ int mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm);
 int check_mmaps(char* address) {
   int i=0;
   for(i=0;i<proc->mmapcount;i++) {
-
     // found the mmap
     if(address >= proc->mmaps[i].start && 
-       address < proc->mmaps[i].start+proc->ofile[proc->mmaps[i].fd]->ip->size) {
+       address < proc->mmaps[i].start+PGROUNDUP(proc->ofile[proc->mmaps[i].fd]->ip->size)) {
 
       char *p = kalloc();
       mappages(proc->pgdir,(char*)PGROUNDDOWN((int)address),PGSIZE,V2P(p),PTE_U|PTE_W);
