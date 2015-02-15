@@ -25,8 +25,7 @@ int main(int argc, char** argv) {
   printf(1,"%s\n",text);
 
   evict((char*)0x40000000);  
-  evict((char*)0x40001000);
-  evict(text2+71661);
+  evict((char*)0x40012000);
 
   exit();
 }
