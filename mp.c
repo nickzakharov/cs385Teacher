@@ -14,7 +14,6 @@
 struct cpu cpus[NCPU];
 static struct cpu *bcpu;
 int ismp;
-int ncpu;
 uchar ioapicid;
 
 int
@@ -114,14 +113,10 @@ mpinit(void)
     switch(*p){
     case MPPROC:
       proc = (struct mpproc*)p;
-      if(ncpu != proc->apicid){
-        cprintf("mpinit: ncpu=%d apicid=%d\n", ncpu, proc->apicid);
-        ismp = 0;
-      }
+      cprintf("mpinit: apicid=%d\n", proc->apicid);
       if(proc->flags & MPBOOT)
-        bcpu = &cpus[ncpu];
-      cpus[ncpu].id = ncpu;
-      ncpu++;
+        bcpu = &cpus[proc->apicid];
+      cpus[proc->apicid].id = proc->apicid;
       p += sizeof(struct mpproc);
       continue;
     case MPIOAPIC:
@@ -141,7 +136,6 @@ mpinit(void)
   }
   if(!ismp){
     // Didn't like what we found; fall back to no MP.
-    ncpu = 1;
     lapic = 0;
     ioapicid = 0;
     return;

@@ -49,7 +49,7 @@ ideinit(void)
 
   initlock(&idelock, "ide");
   picenable(IRQ_IDE);
-  ioapicenable(IRQ_IDE, ncpu - 1);
+  ioapicenable(IRQ_IDE, 0); // jakob - used to be ", ncpu - 1)";
   idewait(0);
   
   // Check if disk 1 is present

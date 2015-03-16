@@ -1,3 +1,4 @@
+
 #include "types.h"
 #include "defs.h"
 #include "param.h"
@@ -79,9 +80,13 @@ startothers(void)
   code = p2v(0x7000);
   memmove(code, _binary_entryother_start, (uint)_binary_entryother_size);
 
-  for(c = cpus; c < cpus+ncpu; c++){
+  for(c = cpus; c < cpus+NCPU; c++){
     if(c == cpus+cpunum())  // We've started already.
       continue;
+    if(c->id==0) {
+      cprintf("Skipping empty CPU entry.\n");
+      continue; 
+    }
 
     // Tell entryother.S what stack to use, where to enter, and what 
     // pgdir to use. We cannot use kpgdir yet, because the AP processor
