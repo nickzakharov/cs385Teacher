@@ -35,7 +35,6 @@ int main(int argc, char** argv) {
 
   int i;
   for(i=0;i<100000000;i++);
-
   start = 1;
 
   for(i=0;i<1000;i++) {

@@ -13,7 +13,7 @@ void f(void) {
   ready=1;
   asm volatile("" : : : "memory");
 
-  for(i=0;i<1000000000;i++) {
+  for(i=0;i<100000;i++) {
     shared++;
   }
 
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
   while(!ready);
 
   int i;
-  for(i=0;i<1000000000;i++) {
+  for(i=0;i<100000;i++) {
     shared++;
   }
  

@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
   }
  
   while(!done);
-  printf(1,"race2 shared is %d\n",shared);
+  printf(1,"race2 shared = %d\n",shared);
 
   exit();
   return 0;
